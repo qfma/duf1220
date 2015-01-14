@@ -54,6 +54,12 @@ docs/_build/
 target/
 
 # Exclude some folders
+.DS_Store
 data
 sequences
 unused_code
+# Go executables
+extract-CM-regions-from-tblout
+extract-CM-regions-from-tblout-fasta
+get-human-NBPF-promoter-regions
+get-nucleotide-domain-positions
