@@ -54,6 +54,7 @@ docs/_build/
 target/
 
 # Exclude some folders
+2015-*
 .DS_Store
 doc
 data
