@@ -55,6 +55,7 @@ target/
 
 # Exclude some folders
 .DS_Store
+doc
 data
 sequences
 unused_code
