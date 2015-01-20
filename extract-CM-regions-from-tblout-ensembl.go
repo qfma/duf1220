@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -18,14 +19,61 @@ type Region struct {
 	Start      int
 	Stop       int
 	Species    string
+	SeqLength  int
 }
 
-// Takes a region and a flank returns the fasta sequence from ensembl
-func GetRegion(r Region, flank int) string {
+// ByAge implements sort.Interface for []*Region based on
+// the Start field.
+type ByStart []*Region
+
+func (a ByStart) Len() int           { return len(a) }
+func (a ByStart) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByStart) Less(i, j int) bool { return a[i].Start < a[j].Start }
+
+// Adds a flanking region of a given size to each hit
+func (r *Region) AddFlank(flank int) {
+	if (r.Start - flank) < 0 {
+		r.Start = 0
+	} else {
+		r.Start = r.Start - flank
+	}
+	if (r.Stop + flank) >= r.SeqLength {
+		r.Stop = r.SeqLength
+	} else {
+		r.Stop = r.Stop + flank
+	}
+}
+
+// // Takes a region and a flank returns the fasta sequence from ensembl
+// func GetRegion(r *Region, flank int) string {
+// 	client := &http.Client{}
+
+// 	baseurl := "http://rest.ensembl.org"
+// 	ext := "/sequence/region/" + r.Species + "/" + r.Chromosome + ":" + strconv.Itoa(r.Start) + ".." + strconv.Itoa(r.Stop) + "?expand_5prime=" + strconv.Itoa(flank) + ";expand_3prime=" + strconv.Itoa(flank)
+
+// 	req, err := http.NewRequest("GET", baseurl+ext, nil)
+// 	req.Header.Set("content-type", "text/x-fasta")
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+
+// 	resp, err := client.Do(req)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+
+// 	defer resp.Body.Close()
+// 	seq, err := ioutil.ReadAll(resp.Body)
+// 	return string(seq)
+// }
+
+// Takes a region and returns the fasta sequence from Ensembl (including the
+// flanking sequences up- and downstream)
+func GetRegion(r *Region) string {
 	client := &http.Client{}
 
 	baseurl := "http://rest.ensembl.org"
-	ext := "/sequence/region/" + r.Species + "/" + r.Chromosome + ":" + strconv.Itoa(r.Start) + ".." + strconv.Itoa(r.Stop) + "?expand_5prime=" + strconv.Itoa(flank) + ";expand_3prime=" + strconv.Itoa(flank)
+	ext := "/sequence/region/" + r.Species + "/" + r.Chromosome + ":" + strconv.Itoa(r.Start) + ".." + strconv.Itoa(r.Stop)
 
 	req, err := http.NewRequest("GET", baseurl+ext, nil)
 	req.Header.Set("content-type", "text/x-fasta")
@@ -71,7 +119,7 @@ func ReadFastaFromString(fasta string) map[string]string {
 
 // Reads a nhmmer tblout output file and for each hit returns a region struct
 // that is stored in a slice
-func ReadTblout(filepath string) []Region {
+func ReadTblout(filepath string) []*Region {
 
 	f, err := os.Open(filepath)
 	if err != nil {
@@ -79,7 +127,7 @@ func ReadTblout(filepath string) []Region {
 	}
 	defer f.Close()
 
-	var regions []Region
+	var regions []*Region
 
 	_, file := path.Split(filepath)
 	species := strings.Split(strings.Split(file, ".")[0], "-")[2]
@@ -95,6 +143,7 @@ func ReadTblout(filepath string) []Region {
 			chromosome := fields[0]
 			start, _ := strconv.Atoi(fields[6])
 			stop, _ := strconv.Atoi(fields[7])
+			seqlen, _ := strconv.Atoi(fields[10])
 			// Depending on the strand, start is larger or smaller than stop.
 			// switch variables if this is the case
 			if start > stop {
@@ -105,8 +154,9 @@ func ReadTblout(filepath string) []Region {
 				Start:      start,
 				Stop:       stop,
 				Species:    species,
+				SeqLength:  seqlen,
 			}
-			regions = append(regions, hit)
+			regions = append(regions, &hit)
 		}
 
 	}
@@ -129,24 +179,46 @@ func WriteRegions(fname string, seqs []string) {
 	return
 }
 
-// As regions are extended by a defined flanking size, we have to check if
-// regions now overlap and correct this. Otherwise domain annotation may produce
-// duplicates.
-func CheckOverlap(regions []Region, flank int) {
+// This function resolves overlaps between close regions on the same
+// chromosome. Regions may overlap, because the flanking region extends into
+// another region.
+// Therefore situations like this can occur:
+// Overlap r1 and r2 like this:
+//            r2.Start----------------------r2.Stop
+//r1.Start--------------------r1.Stop
+//
+// The functions orders regions on the same chromosome and then resolves the
+// above overlaps.
+func ResolveOverlappingRegions(regions []*Region, flank int) {
 
-	for _, r1 := range regions {
-		for _, r2 := range regions {
-			if r1 != r2 && r1.Chromosome == r2.Chromosome {
-				if r2.Start+flank > r1.Start+flank && r2.Start+flank < r1.Stop+flank {
-					fmt.Println("Overlap detected!")
-					fmt.Println(r1, r2)
-				} else if r2.Stop+flank < r1.Stop+flank && r2.Stop+flank > r1.Start+flank {
-					fmt.Println("Overlap detected!")
-					fmt.Println(r1, r2)
+	ChromosomalRegions := make(map[string][]*Region)
+
+	for _, r := range regions {
+		ChromosomalRegions[r.Chromosome] = append(ChromosomalRegions[r.Chromosome], r)
+	}
+
+	for _, regions := range ChromosomalRegions {
+		sort.Sort(ByStart(regions))
+
+		if len(regions) >= 2 {
+			for i := 0; i < len(regions)-1; i++ {
+				r1 := regions[i]
+				r2 := regions[i+1]
+				// Overlap r1 and r2 like this:
+				//            r2.Start----------------------r2.Stop
+				//r1.Start--------------------r1.Stop
+				if r1.Stop > r2.Start {
+					fmt.Println("Overlap detected! Resolving..")
+					r2.Start = r1.Stop + 1
+					if r2.Start >= r2.SeqLength {
+						r2.Start = r2.SeqLength
+					}
 				}
+				fmt.Println(r1, r2)
 			}
 		}
 	}
+
 	return
 }
 
@@ -159,13 +231,17 @@ func main() {
 	flag.Parse()
 	log.SetOutput(os.Stdout)
 	regions := ReadTblout(*tblout)
-	CheckOverlap(regions, *flank)
+	for _, r := range regions {
+		r.AddFlank(*flank)
+	}
+
+	ResolveOverlappingRegions(regions, *flank)
 
 	var seqs []string
 
 	for _, r := range regions {
 		// Returns a fasta file
-		seq := GetRegion(r, *flank)
+		seq := GetRegion(r)
 		seqs = append(seqs, seq)
 	}
 

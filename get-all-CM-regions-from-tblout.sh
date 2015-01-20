@@ -6,7 +6,7 @@ for tblout in $INFOLDER/*.tblout;
         SPECIES=$(echo $(basename $tblout) | cut -f1 -d.);
         echo "Extracting CM regions for $SPECIES..."
         sleep 5
-        ./extract-CM-regions-from-tblout -tblout=$tblout -fasta=$SPECIES.fa -flank=100000
+        ./extract-CM-regions-from-tblout-ensembl -tblout=$tblout -fasta=$SPECIES.fa -flank=100000
     done;
 
 mkdir $OUTFOLDER
