@@ -66,3 +66,4 @@ extract-CM-regions-from-tblout-fasta
 get-human-NBPF-promoter-regions
 get-nucleotide-domain-positions
 extract-CM-regions-from-tblout
+extract-CM-regions-from-psl-ensembl
