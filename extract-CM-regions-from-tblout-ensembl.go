@@ -20,6 +20,7 @@ type Region struct {
 	Stop       int
 	Species    string
 	SeqLength  int
+	Skip       bool
 }
 
 // ByAge implements sort.Interface for []*Region based on
@@ -43,29 +44,6 @@ func (r *Region) AddFlank(flank int) {
 		r.Stop = r.Stop + flank
 	}
 }
-
-// // Takes a region and a flank returns the fasta sequence from ensembl
-// func GetRegion(r *Region, flank int) string {
-// 	client := &http.Client{}
-
-// 	baseurl := "http://rest.ensembl.org"
-// 	ext := "/sequence/region/" + r.Species + "/" + r.Chromosome + ":" + strconv.Itoa(r.Start) + ".." + strconv.Itoa(r.Stop) + "?expand_5prime=" + strconv.Itoa(flank) + ";expand_3prime=" + strconv.Itoa(flank)
-
-// 	req, err := http.NewRequest("GET", baseurl+ext, nil)
-// 	req.Header.Set("content-type", "text/x-fasta")
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-
-// 	resp, err := client.Do(req)
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-
-// 	defer resp.Body.Close()
-// 	seq, err := ioutil.ReadAll(resp.Body)
-// 	return string(seq)
-// }
 
 // Takes a region and returns the fasta sequence from Ensembl (including the
 // flanking sequences up- and downstream)
@@ -155,6 +133,7 @@ func ReadTblout(filepath string) []*Region {
 				Stop:       stop,
 				Species:    species,
 				SeqLength:  seqlen,
+				Skip:       false,
 			}
 			regions = append(regions, &hit)
 		}
@@ -204,10 +183,13 @@ func ResolveOverlappingRegions(regions []*Region, flank int) {
 			for i := 0; i < len(regions)-1; i++ {
 				r1 := regions[i]
 				r2 := regions[i+1]
-				// Overlap r1 and r2 like this:
-				//            r2.Start----------------------r2.Stop
-				//r1.Start--------------------r1.Stop
-				if r1.Stop > r2.Start {
+				// If the r2 region is within the r1 region, skip r2
+				if r1.Stop > r2.Start && r1.Stop >= r2.Stop {
+					r2.Skip = true
+				} else if r1.Stop > r2.Start {
+					// Overlap r1 and r2 like this:
+					//            r2.Start----------------------r2.Stop
+					//r1.Start--------------------r1.Stop
 					fmt.Println("Overlap detected! Resolving..")
 					r2.Start = r1.Stop + 1
 					if r2.Start >= r2.SeqLength {
@@ -220,6 +202,17 @@ func ResolveOverlappingRegions(regions []*Region, flank int) {
 	}
 
 	return
+}
+
+func RemoveRegions(regions []*Region) []*Region {
+	var newRegions []*Region
+
+	for _, r := range regions {
+		if r.Skip != true {
+			newRegions = append(newRegions, r)
+		}
+	}
+	return newRegions
 }
 
 func main() {
@@ -236,10 +229,10 @@ func main() {
 	}
 
 	ResolveOverlappingRegions(regions, *flank)
-
+	validregions := RemoveRegions(regions)
 	var seqs []string
 
-	for _, r := range regions {
+	for _, r := range validregions {
 		// Returns a fasta file
 		seq := GetRegion(r)
 		seqs = append(seqs, seq)

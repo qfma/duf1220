@@ -1,4 +1,5 @@
 NOW=$(date +"%Y-%m-%d")
+NOW="2015-01-23"
 echo "====CDNA-all-longest===="
 echo "============================="
 for dfam in $NOW-nhmmer-vs-cdna-longest/*.dfamtblout;

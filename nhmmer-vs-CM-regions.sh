@@ -1,4 +1,5 @@
 NOW=$(date +"%Y-%m-%d")
+NOW="2015-01-23"
 OUTFOLDER="$NOW-nhmmer-vs-CM-regions-plus-flank"
 INFOLDER="$NOW-all-CM-regions-plus-flank"
 for i in $INFOLDER/*.fa;
@@ -8,7 +9,7 @@ for i in $INFOLDER/*.fa;
 			   --tblout "duf1220-vs-CM-region-$SPECIES.tblout" \
 			   -E 1e-10 \
 			   --cpu=8 \
-			   ./data/2014-10-14-duf1220-all-ensembl-nucl/2014-10-14-duf1220-all-ensembl.hmm \
+			   ./$NOW-duf1220-all-ensembl-nucl/$NOW-duf1220-all-ensembl.hmm \
 			   $i;
 	done;
 mkdir $OUTFOLDER

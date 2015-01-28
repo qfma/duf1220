@@ -1,5 +1,6 @@
 NOW=$(date +"%Y-%m-%d")
-INFOLDER="2015-01-12-nhmmer-CM-vs-dna"
+NOW=2015-01-23
+INFOLDER="$NOW-nhmmer-CM-vs-dna"
 OUTFOLDER="$NOW-all-CM-regions-plus-flank"
 for tblout in $INFOLDER/*.tblout;
     do

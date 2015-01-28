@@ -14,6 +14,7 @@ import (
 	"unicode/utf8"
 )
 
+
 type Region struct {
 	Chromosome string
 	Start      int
@@ -90,6 +91,7 @@ for _, r := range regions {
 	return fasta
 }
 
+
 // Parses a fasta file from a string and returns a map where each key is a GID
 // and each entry is the sequence of the entry
 func ReadFastaFromString(fasta string) map[string]string {
@@ -118,7 +120,7 @@ func ReadFastaFromString(fasta string) map[string]string {
 
 // Reads a nhmmer tblout output file and for each hit returns a region struct
 // that is stored in a slice
-func ReadTblout(filepath string) []*Region {
+func ReadPSL(filepath string) []*Region {
 
 	f, err := os.Open(filepath)
 	if err != nil {
@@ -127,6 +129,7 @@ func ReadTblout(filepath string) []*Region {
 	defer f.Close()
 
 	var regions []*Region
+	var startsignal bool
 
 	_, file := path.Split(filepath)
 	species := strings.Split(strings.Split(file, ".")[0], "-")[2]
@@ -134,15 +137,18 @@ func ReadTblout(filepath string) []*Region {
 	scanner := bufio.NewScanner(f)
 
 	for scanner.Scan() {
-		// # denotes the start of a comment and can be ignored
-		if strings.HasPrefix(scanner.Text(), "#") {
+		// Treat all lines after ---- as fields
+		if strings.HasPrefix(scanner.Text(), "-") {
+			startsignal = true
 			continue
-		} else {
+		}
+		// Once we have got the startsignal, start reading fields
+		if startsignal {
 			fields := strings.Fields(scanner.Text())
-			chromosome := fields[0]
-			start, _ := strconv.Atoi(fields[6])
-			stop, _ := strconv.Atoi(fields[7])
-			seqlen, _ := strconv.Atoi(fields[10])
+			chromosome := fields[13]
+			start, _ := strconv.Atoi(fields[15])
+			stop, _ := strconv.Atoi(fields[16])
+			seqlen, _ := strconv.Atoi(fields[14])
 			// Depending on the strand, start is larger or smaller than stop.
 			// switch variables if this is the case
 			if start > stop {
@@ -237,20 +243,23 @@ func RemoveRegions(regions []*Region) []*Region {
 
 func main() {
 	var (
-		tblout = flag.String("tblout", "", "A tblout formatted file containing nhmmer hits.")
+		psl = flag.String("psl", "", "A psl formatted file containing BLAT hits.")
 		genome = flag.String("genome", "", "A tblout formatted file containing nhmmer hits.")
 		fasta  = flag.String("fasta", "test", "The extended regions as fasta file")
 		flank  = flag.Int("flank", 100000, "The length of the flanking region")
 	)
 	flag.Parse()
 	log.SetOutput(os.Stdout)
-	regions := ReadTblout(*tblout)
+	fmt.Println(*psl)
+	regions := ReadPSL(*psl)
+	fmt.Println(regions)
 	for _, r := range regions {
 		r.AddFlank(*flank)
 	}
 
 	ResolveOverlappingRegions(regions, *flank)
 	validregions := RemoveRegions(regions)
+
 	seqs := GetRegionsFasta(validregions, *genome)
 
 	WriteRegions(*fasta, seqs)
