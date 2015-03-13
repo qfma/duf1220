@@ -51,30 +51,44 @@ def is_number(s):
     except ValueError:
         return False
 
+
 def valid_chromosome(seq_header):
 
     chrom = seq_header.split()[2].split(":")[2]
 
+    names = ["GL",        # Callithrix
+             "ACF",       # Callithrix
+             "AQ",        # Chlorocebus
+             "KE",        # Chlorocebus
+             "unplaced",  # Gorilla
+             "cutchr",    # Gorilla
+             "scaffold",      # Microcebus, Tarsius
+             "GeneScaffold",  # Microcebus, Tarsius
+             "ADF",           # Nomascus
+             "AAQ",           # Otolemur
+             "AAC",           # Pan
+             "AHZ",           # Papio
+             "JH",            # Papio
+             "_random",       # Pongo
+             "X",
+             "Y",
+             "A",
+             "a",
+             "b",
+             "B",
+             "MT"
+             ]
     if is_number(chrom):
         return True
-    elif chrom in "XY":
-        return True
-    elif chrom.startswith("scaffold"):
-        return True
-    elif chrom.startswith("GeneScaffold"):
-        return True
-    elif chrom.startswith("EL"):
-        return True
-    elif chrom.startswith("GL0"):
-        return False
-    elif chrom.startswith("GL"):
-        return True
-    elif chrom.startswith("ADF"):
-        return True
-    elif chrom.startswith("AAQ"):
-        return True
-    else:
-        return False
+
+    for n in names:
+        if chrom.startswith(n):
+            return True
+        # For Pongo
+        elif chrom.endswith(n):
+            return True
+    return False
+
 
 def find_isoforms(genome):
     isoforms = {}
