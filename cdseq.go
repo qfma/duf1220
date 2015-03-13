@@ -10,14 +10,13 @@ import (
 	"time"
 )
 
-// Takes an ID and returns the fasta sequence from Ensembl
+// Takes an ID and returns the fasta sequence of the CDS from Ensembl
 func GetSequence(id string) string {
 	client := &http.Client{}
 
 	baseurl := "http://rest.ensembl.org"
 	ext := "/sequence/id/" + id + "?type=cds;multiple_sequences=1"
 	req, err := http.NewRequest("GET", baseurl+ext, nil)
-	// fmt.Println(baseurl + ext)
 	req.Header.Set("content-type", "text/x-fasta")
 	if err != nil {
 		log.Fatal(err)
@@ -37,10 +36,14 @@ func main() {
 
 	log.SetOutput(os.Stderr)
 
+	// Make a scanner to receive a stream of IDs from Stdin
+	// pass the IDs to the Ensembl REST API and write the cds sequence
+	// as fasta
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		id := scanner.Text()
 		seq := GetSequence(id)
+		// Be polite, don't hammer the API
 		time.Sleep(100 * time.Millisecond)
 		d := []byte(seq)
 		err := ioutil.WriteFile(id+".cds.all.fa", d, 0644)

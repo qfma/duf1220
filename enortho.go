@@ -12,6 +12,7 @@ import (
 	"time"
 )
 
+// This converts the json output from the Ensembl REST API to a go struct
 type Homologs []struct {
 	TaxonomyLevel  string `json:"taxonomy_level"`
 	ProteinId      string `json:"protein_id"`
@@ -21,7 +22,8 @@ type Homologs []struct {
 	MethodLinkType string `json:"method_link_type"`
 }
 
-// Takes an ID and returns the fasta sequence from Ensembl
+// Takes an ID and returns the JSON output as Homolog structs
+// The map[string][]map[string] part is necessary, because of the nested JSON
 func GetOrthologous(id string) map[string][]map[string]Homologs {
 	client := &http.Client{}
 
@@ -30,7 +32,6 @@ func GetOrthologous(id string) map[string][]map[string]Homologs {
 	baseurl := "http://rest.ensembl.org"
 	ext := "/homology/id/" + id + "?format=condensed"
 	req, err := http.NewRequest("GET", baseurl+ext, nil)
-	// fmt.Println(baseurl + ext)
 	req.Header.Set("content-type", "application/json")
 	if err != nil {
 		log.Fatal(err)
@@ -49,6 +50,7 @@ func GetOrthologous(id string) map[string][]map[string]Homologs {
 	return data
 }
 
+// Get us some simple print output for the homologs
 func PrintSpeciesOrthologs(homologies Homologs, species []string) {
 	for _, s := range species {
 		for _, h := range homologies {
@@ -69,12 +71,16 @@ func main() {
 
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
+
 		id := scanner.Text()
 		data := GetOrthologous(id)
+
+		// Check if we found any homologs
 		if len(data["data"]) != 0 {
 			homologs := data["data"][0]["homologies"]
 			PrintSpeciesOrthologs(homologs, target_species)
 		}
+		// Be polite, don't hammer the API
 		time.Sleep(100 * time.Millisecond)
 
 	}

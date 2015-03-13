@@ -14,6 +14,7 @@ import (
 	"time"
 )
 
+// A struct to store a domain from tblout HMMER output
 type Domain struct {
 	Chromosome string
 	Alifrom    int // The start of the HMM alignment within the query
@@ -51,6 +52,7 @@ func GetDomainFeature(d *Domain, feature string) {
 	client := &http.Client{}
 
 	baseurl := "http://rest.ensembl.org"
+	// Was needed when using non-Ensembl species
 	// domainstart := strconv.Itoa(d.Seqstart + d.Alifrom)
 	// domainstop := strconv.Itoa(d.Seqstart + d.Alito)
 	ext := "/overlap/region/" + d.Species + "/" + d.Chromosome + ":" + strconv.Itoa(d.Alifrom) + "-" + strconv.Itoa(d.Alito) + "?feature=" + feature
@@ -72,6 +74,7 @@ func GetDomainFeature(d *Domain, feature string) {
 	d.Features = features
 }
 
+// Parse a tblout file from HMMER
 func ReadTblout(filepath string) []*Domain {
 
 	f, err := os.Open(filepath)
