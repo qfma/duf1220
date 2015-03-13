@@ -1,7 +1,10 @@
-## Introduction
+## DUF1220 analysis
 This document describes the methods and every command used to analyze the distribution of the DUF1220([PF06758](http://pfam.xfam.org/family/duf1220)) protein domains across various primates.
 The analysis and pipeline is based on some of the methods described by [O'Bleness et al.](http://g3journal.org/content/2/9/977). The main difference to th O'Bleness paper is,
 that BLAT search has been replaced by Hidden Markov Models (HMM).
+
+If you find some of these scripts useful, please cite: REF
+
 
 ## Software requirements
 
