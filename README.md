@@ -3,6 +3,15 @@ This document describes the methods and every command used to analyze the distri
 The analysis and pipeline is based on some of the methods described by [O'Bleness et al.](http://g3journal.org/content/2/9/977). The main difference to th O'Bleness paper is,
 that BLAT search has been replaced by Hidden Markov Models (HMM).
 
+## Software requirements
+
+The analysis was performed using Linux/OSX and has not been tested on Windows.
+In order to run the scripts you need:
+
+- A usable Python 2.7 installation
+- A usable [Google Go](http://golang.org) installation
+- An internet connection for querying the Ensembl REST API
+
 ## Method summary
 
 In order to characterize the distribution of DUF1220 domains in NBPF genes, we obtained 12 primate genomes from Ensembl [REF] version 78 (*Homo sapiens*, *Pan troglodytes*, *Gorilla gorilla*, *Pongo abelii*, *Nomascus leucogenys*, *Macaca mulatta*, *Tarsius syrichta*, *Microcebus murinus*, *Otolemur garnettii*, *Callithrix jacchus*, *Papio anubis*, *Chlorocebus sabaeus*). We used HMMER [REF] to build a Hidden Markov Model (HMM) from the DUF1220([PF06758](http://pfam.xfam.org/family/duf1220)) seed alignment stored in the [PFAM database](http://pfam.xfam.org/family/duf1220#tabview=tab3). We extracted the longest isoforms for all proteomes and searched them using the DUF1220 HMM (hmmsearch, E-value < 1e-10), providing a first estimate of the DUF1220 in these species (Table REF, Peptide counts)
@@ -12,8 +21,6 @@ We used the positional information from the HMMER output to extract the correspo
 In order to make sure that we include all DUF1120 domains present in a given gene, we searched the complete genomic DNA for all 12 species using the same nHMMER model. In comparison to the number of DUF1120 domains in peptide and cDNA sequences, the genomic search returns a much higher count (Table REF). The main reason for this increase is that many of the DUF1120 domains are located in regions with no feature annotation by Ensembl, and are therefore not included in peptide or cDNA sequences (Table REF). This is in contrast to those domains that are in exonic regions, which are similar to the peptide and cDNA counts.
 
 Because we are primarily interested in those DUF1220 domains that are located in NBPF genes, we extracted the CM (Conserved Mammal) promoter region as defined by [O'Bleness et al.](http://g3journal.org/content/2/9/977) upstream of human genes NBPF4, NBPF6 and NBPF7 and aligned them using MAFFT (mafft --globalpair). This alignment was again used to build a nucleotide HMM for the CM promoter, which we used to search the genomic region of all DUF1220 containing genes, including 1000bp up- and downstream for significant CM promoter hits (nhmmer, E-value < 1e-10), shown in Table REF, CDS with CM promoter. We then subdivided exonic domains in those that are within genes with a CM promoter and those that are not.
-
-All scripts and data used in the analysis are made available on [Github](https://github.com/qfma/duf1220) under a MIT license.
 
 ## Method issues, shortcomings etc.
 
@@ -52,41 +59,6 @@ The ugly:
 10. Callithrix jacchus (Marmoset)
 11. Papio anubis (Olive baboon)
 12. Chlorocebus sabaeus (Green Vervet monkey)
-
-### Deprecated
-
-The following entries have been deprecated and are not used anymore.
-<div style="color:#D0D0D0">
-**[Pre-Ensembl](http://pre.ensembl.org/index.html)**:
-
-13. Macaca fasicularis (Crab-eating macaque)
-14. Papio hamadryas (Hamadryas baboon)
-15. Saimiri boliviensis (Squirrel monkey)
-
-
-**George et al. exomes:*
-
-**Note:**: were excluded from the final analysis
-
-Paper is [here](http://genome.cshlp.org/content/21/10/1686.full) and data should be available [here](http://depts.washington.edu/swansonw/Swanson_Lab/Data.html)
-
-**Note**: This requires a fucking proprietary piece of crappy software that kills my internet connection. Yes, it kills my router, my modem, my computer.
-
-16. Chlorocebus aethiops (Grivet velvet monkey)
-17. Colobus angolensis (Angola colobus)
-18. Saguinus midas (red-handed tamarin)
-19. Macaque (duplication Ensembl)
-
-**MISC genomes:**
-
-18. Homo neanderthalensis (Neanderthal) [Data download](http://neandertal.ensemblgenomes.org/index.html)
-
-**Note:** Only BAM alignments?
-
-19. Pan paniscus (Bonobo) [here](http://www.eva.mpg.de/bonobo-genome/data.html)
-
-20. Daubentonia madagascariensis (Aye-aye): Paper is [here](http://gbe.oxfordjournals.org/content/4/2/126.long) data is [here](http://giladlab.uchicago.edu/data/AyeAyeGenome/)
-</div>
 
 ### DUF1220 proteome annotation
 
@@ -296,3 +268,28 @@ ENSPTRG00000039633 pan_troglodytes ortholog_one2many
 ENSPANG00000018417 papio_anubis ortholog_one2one
 ENSTSYG00000007889 tarsius_syrichta ortholog_one2many
 ```
+
+### License
+
+The MIT License (MIT)
+
+Copyright (c) 2015 Fabian Zimmer
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
