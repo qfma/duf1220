@@ -25,11 +25,13 @@ for s in "${SPECIES[@]}";
 		cs=$(echo $s | awk '{print toupper(substr($0,1,1)) tolower(substr($0,2)) }')
 		echo "Downloading sequences for $cs "
 		ftp_pep="ftp://ftp.ensembl.org/pub/release-$VERSION/fasta/$s/pep/"
+		ftp_cds="ftp://ftp.ensembl.org/pub/release-$VERSION/fasta/$s/cds/"
 		ftp_cdna="ftp://ftp.ensembl.org/pub/release-$VERSION/fasta/$s/cdna/"
 		ftp_dna="ftp://ftp.ensembl.org/pub/release-$VERSION/fasta/$s/dna/"
-		wget -r --accept "*.pep.all.fa.gz" --level 2 $ftp_pep
-		wget -r --accept "*.cdna.all.fa.gz" --level 2 $ftp_cdna
-		wget -r --accept "*.dna.toplevel.fa.gz" --level 2 $ftp_dna
+		# wget -r --accept "*.pep.all.fa.gz" --level 2 $ftp_pep
+		# wget -r --accept "*.cdna.all.fa.gz" --level 2 $ftp_cdna
+		wget -r --accept "*.cds.all.fa.gz" --level 2 $ftp_cds
+		# wget -r --accept "*.dna.toplevel.fa.gz" --level 2 $ftp_dna
 
 	done;
 

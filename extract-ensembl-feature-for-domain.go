@@ -64,6 +64,7 @@ func GetDomainFeature(d *Domain, feature string) {
 	}
 
 	resp, err := client.Do(req)
+
 	if err != nil {
 		log.Fatal(err)
 	}

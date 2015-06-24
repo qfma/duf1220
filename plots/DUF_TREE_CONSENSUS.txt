@@ -1,0 +1,18 @@
+#NEXUS
+[created by the 10kTree Website - http://10kTrees.fas.harvard.edu]
+BEGIN TREES;
+translate
+1 Chlorocebus_sabaeus,
+2 Microcebus_murinus,
+3 Callithrix_jacchus,
+4 Gorilla_gorilla,
+5 Homo_sapiens,
+6 Nomascus_leucogenys,
+7 Pan_troglodytes,
+8 Pongo_abelii,
+9 Macaca_mulatta,
+10 Papio_anubis,
+11 Otolemur_garnettii,
+12 Tarsius_syrichta;
+tree consensus_12species = (((((1:14.875178,(10:12.852525,9:12.852525):2.022653):15.124822,(6:19.605946,((4:8.652233,(5:6.175880,7:6.175879):2.476353):6.480222,8:15.132455):4.473491):10.394055):16.811821,3:46.811820):22.028211,12:68.840033):4.162986,(2:62.736551,11:62.736554):10.266465);
+END;
