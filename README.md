@@ -16,7 +16,7 @@ In order to run the scripts you need:
 
 - A usable Python 2.7 installation
 - A usable [Google Go](http://golang.org) installation
-- An internet connection for querying the Ensembl REST API (doi:10.1093/bioinformatics/btu613)
+- An internet connection for querying the [Ensembl REST API](http://www.ncbi.nlm.nih.gov/pubmed/25236461) (doi:10.1093/bioinformatics/btu613)
 
 ## Method summary
 
