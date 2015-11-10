@@ -5,7 +5,7 @@ that BLAT search has been replaced by Hidden Markov Models (HMM).
 
 If you find some of these scripts useful, please cite: 
 
-Phylogenetic Analysis Supports a Link between DUF1220 Domain Number and Primate Brain Expansion
+[Phylogenetic Analysis Supports a Link between DUF1220 Domain Number and Primate Brain Expansion](http://gbe.oxfordjournals.org/content/7/8/2083)  
 Fabian Zimmer and Stephen H. Montgomery*
 
 
