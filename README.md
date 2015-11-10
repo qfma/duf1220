@@ -3,7 +3,10 @@ This document describes the methods and every command used to analyze the distri
 The analysis and pipeline is based on some of the methods described by [O'Bleness et al.](http://g3journal.org/content/2/9/977). The main difference to th O'Bleness paper is,
 that BLAT search has been replaced by Hidden Markov Models (HMM).
 
-If you find some of these scripts useful, please cite: REF
+If you find some of these scripts useful, please cite: 
+
+Phylogenetic Analysis Supports a Link between DUF1220 Domain Number and Primate Brain Expansion
+Fabian Zimmer and Stephen H. Montgomery*
 
 
 ## Software requirements
@@ -13,7 +16,7 @@ In order to run the scripts you need:
 
 - A usable Python 2.7 installation
 - A usable [Google Go](http://golang.org) installation
-- An internet connection for querying the Ensembl REST API
+- An internet connection for querying the Ensembl REST API (doi:10.1093/bioinformatics/btu613)
 
 ## Method summary
 
