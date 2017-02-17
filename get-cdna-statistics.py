@@ -1,7 +1,7 @@
 #!/usr/local/bin/python2.7
 # -*- coding: utf-8 -*-
 #
-#       01-get-longest-isoform.py
+#       get-cdna-statistics.py
 #==============================================================================
 import argparse
 import sys
